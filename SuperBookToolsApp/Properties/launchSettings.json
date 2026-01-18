@@ -3,9 +3,9 @@
     "SuperBookToolsApp": {
       "commandName": "Project"
     },
-    "Command - AiPdfSuper": {
+    "Command - ConvertPdf": {
       "commandName": "Project",
-      "commandLineArgs": "AiPdfSuper"
+      "commandLineArgs": "ConvertPdf"
     }
   }
 }

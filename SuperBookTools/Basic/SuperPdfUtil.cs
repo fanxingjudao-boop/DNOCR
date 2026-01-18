@@ -1077,7 +1077,7 @@ public static class SuperImgUtil
         public FileSystemEntity Src = null!;
         public string DstPath = null!;
         public string OkFileDigest = null!;
-        public int Index;
+        public int Index = 0;
     }
 
 

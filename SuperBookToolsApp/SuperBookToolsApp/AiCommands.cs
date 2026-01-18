@@ -31,42 +31,47 @@ namespace SuperBookTools.App
     public static class SuperBookExternalTools
     {
         public static readonly ImageMagickUtil ImageMagick = new ImageMagickUtil(new ImageMagickOptions(
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-7.1.1-47-portable-Q16-HDRI-x64\magick.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-7.1.1-47-portable-Q16-HDRI-x64\mogrify.exe"),
+            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-portable-Q16-HDRI-x64\magick.exe"),
+            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-portable-Q16-HDRI-x64\mogrify.exe"),
             Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\exiftool-13.30_64\exiftool.exe"),
             Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\QPDF\bin\qpdf.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\pdfcpu\pdfcpu_0.11.0_Windows_x86_64\pdfcpu.exe")
+            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\pdfcpu\pdfcpu.exe")
         ));
 
         public static readonly FfMpegUtil FfMpeg = new FfMpegUtil(new FfMpegUtilOptions(
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\ffmpeg\240703\ffmpeg.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\ffmpeg\240703\ffprobe.exe")));
+            Path.Combine(Env.AppRootDir, @"_dummy.exe"),
+            Path.Combine(Env.AppRootDir, @"_dummy.exe")));
 
         public static readonly AiUtilBasicSettings Settings = new AiUtilBasicSettings
         {
             AiTest_RealEsrgan_BaseDir = Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\RealEsrgan\RealEsrgan_Repo"),
-            AiTest_TesseractOCR_Data_Dir = Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\TesseractOCR_Data\250614\tessdata"),
+            AiTest_TesseractOCR_Data_Dir = Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\TesseractOCR_Data"),
         };
         public static readonly AiTask Task = new AiTask(Settings, FfMpeg);
-
-        public static AiRandomBgmSettingsFactory SettingsFactory = null!;
     }
 
     public static partial class Commands
     {
         [ConsoleCommand(
-            "AiPdfSuper command",
-            "AiPdfSuper",
-            "AiPdfSuper command")]
-        public static async Task<int> AiPdfSuper(ConsoleService c, string cmdName, string str)
+            "ConvertPdf command",
+            "ConvertPdf [srcDir] [/dst:dstDir]",
+            "ConvertPdf command")]
+        public static async Task<int> ConvertPdf(ConsoleService c, string cmdName, string str)
         {
             ConsoleParam[] args =
             {
+                new ConsoleParam("[srcDir]", ConsoleService.Prompt, "Source directory path: ", ConsoleService.EvalNotEmpty, null),
+                new ConsoleParam("dst", ConsoleService.Prompt, "Destination directory path: ", ConsoleService.EvalNotEmpty, null),
             };
             ConsoleParamValueList vl = c.ParseCommandList(cmdName, str, args);
 
-            string srcDir = @"C:\tmp\260118pdftest\src";
-            string dstDir = @"C:\tmp\260118pdftest\dst";
+            string srcDir = vl.DefaultParam.StrValue;
+            string dstDir = vl["dst"].StrValue;
+
+            if (srcDir._IsSamei(dstDir) == false)
+            {
+                throw new CoresException("srcDir must not be same to dstDir.");
+            }
 
             SuperPerformPdfOptions options = new SuperPerformPdfOptions {/* MaxPagesForDebug = 120, SaveDebugPng = true, SkipRealesrgan = true */ };
 
@@ -122,7 +127,7 @@ namespace SuperBookTools.App
                 }
             }
 
-            $"\n\n<< AiPdfSuper Result >>\nnumTotal = {numTotal}, numSkip = {numSkip}, numOk = {numOk}, numError = {numError}\n\n"._Error();
+            $"\n\n<< ConvertPdf Result >>\nnumTotal = {numTotal}, numSkip = {numSkip}, numOk = {numOk}, numError = {numError}\n\n"._Error();
 
             return 0;
         }
