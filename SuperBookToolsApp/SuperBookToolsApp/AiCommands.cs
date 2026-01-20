@@ -30,23 +30,50 @@ namespace SuperBookTools.App
 {
     public static class SuperBookExternalTools
     {
-        public static readonly ImageMagickUtil ImageMagick = new ImageMagickUtil(new ImageMagickOptions(
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-portable-Q16-HDRI-x64\magick.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-portable-Q16-HDRI-x64\mogrify.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\exiftool-13.30_64\exiftool.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\QPDF\bin\qpdf.exe"),
-            Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\pdfcpu\pdfcpu.exe")
-        ));
+        private static ImageMagickOptions CreateImageMagickOptions()
+        {
+            if (Env.IsWindows)
+            {
+                // Windows: external_tools 内のポータブル版を使用
+                return new ImageMagickOptions(
+                    Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-portable-Q16-HDRI-x64\magick.exe"),
+                    Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\ImageMagick-portable-Q16-HDRI-x64\mogrify.exe"),
+                    Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\exiftool-13.30_64\exiftool.exe"),
+                    Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\QPDF\bin\qpdf.exe"),
+                    Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\pdfcpu\pdfcpu.exe")
+                );
+            }
+            else
+            {
+                // Linux: システムインストールのツールを優先使用、pdfcpu は external_tools から
+                // Ubuntu 22.04 の ImageMagick 6.x は magick ではなく convert を使用
+                return new ImageMagickOptions(
+                    "convert",  // apt install imagemagick (ImageMagick 6.x)
+                    "mogrify",  // apt install imagemagick
+                    "exiftool", // apt install libimage-exiftool-perl
+                    "qpdf",     // apt install qpdf
+                    Path.Combine(Env.AppRootDir, "..", "external_tools", "external_tools", "image_tools", "pdfcpu", "pdfcpu")
+                );
+            }
+        }
+
+        private static AiUtilBasicSettings CreateAiSettings()
+        {
+            // OS 非依存のパス形式を使用
+            return new AiUtilBasicSettings
+            {
+                AiTest_RealEsrgan_BaseDir = Path.Combine(Env.AppRootDir, "..", "external_tools", "external_tools", "image_tools", "RealEsrgan", "RealEsrgan_Repo"),
+                AiTest_TesseractOCR_Data_Dir = Path.Combine(Env.AppRootDir, "..", "external_tools", "external_tools", "image_tools", "TesseractOCR_Data"),
+            };
+        }
+
+        public static readonly ImageMagickUtil ImageMagick = new ImageMagickUtil(CreateImageMagickOptions());
 
         public static readonly FfMpegUtil FfMpeg = new FfMpegUtil(new FfMpegUtilOptions(
-            Path.Combine(Env.AppRootDir, @"_dummy.exe"),
-            Path.Combine(Env.AppRootDir, @"_dummy.exe")));
+            Path.Combine(Env.AppRootDir, "_dummy"),
+            Path.Combine(Env.AppRootDir, "_dummy")));
 
-        public static readonly AiUtilBasicSettings Settings = new AiUtilBasicSettings
-        {
-            AiTest_RealEsrgan_BaseDir = Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\RealEsrgan\RealEsrgan_Repo"),
-            AiTest_TesseractOCR_Data_Dir = Path.Combine(Env.AppRootDir, @"..\external_tools\external_tools\image_tools\TesseractOCR_Data"),
-        };
+        public static readonly AiUtilBasicSettings Settings = CreateAiSettings();
         public static readonly AiTask Task = new AiTask(Settings, FfMpeg);
     }
 
@@ -68,7 +95,7 @@ namespace SuperBookTools.App
             string srcDir = vl.DefaultParam.StrValue;
             string dstDir = vl["dst"].StrValue;
 
-            if (srcDir._IsSamei(dstDir) == false)
+            if (srcDir._IsSamei(dstDir))
             {
                 throw new CoresException("srcDir must not be same to dstDir.");
             }
