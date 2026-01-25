@@ -58,7 +58,7 @@ namespace SuperBookTools.App
     {
         [ConsoleCommand(
             "ConvertPdf command",
-            "ConvertPdf [srcDir] [/dst:dstDir] [/ocr:yes|no]",
+            "ConvertPdf [srcDir] [/dst:dstDir] [/ocr:yes|no] [/skip:yes|no]",
             "ConvertPdf command")]
         public static async Task<int> ConvertPdf(ConsoleService c, string cmdName, string str)
         {
@@ -67,6 +67,7 @@ namespace SuperBookTools.App
                 new ConsoleParam("[srcDir]", ConsoleService.Prompt, "Source directory path: ", ConsoleService.EvalNotEmpty, null),
                 new ConsoleParam("dst", ConsoleService.Prompt, "Destination directory path: ", ConsoleService.EvalNotEmpty, null),
                 new ConsoleParam("ocr", ConsoleService.Prompt, "Perform Japanese High-Quality OCR? (Y/N): ", null, null),
+                new ConsoleParam("skip", null, null, null, null),
             };
             ConsoleParamValueList vl = c.ParseCommandList(cmdName, str, args);
 
@@ -86,9 +87,20 @@ namespace SuperBookTools.App
 
             await Lfs.CreateDirectoryAsync(dstDir);
 
-            SuperPerformPdfOptions options = new SuperPerformPdfOptions {/* MaxPagesForDebug = 120, SaveDebugPng = true, SkipRealesrgan = true */ };
+            bool skipRealesrgan = vl["skip"].BoolValue;
+
+            SuperPerformPdfOptions options = new SuperPerformPdfOptions { SkipRealesrgan = skipRealesrgan };
 
             bool performOcr = vl["ocr"].BoolValue;
+
+            if (skipRealesrgan)
+            {
+                ""._Print();
+                "***"._Print();
+                $"The \"skip\" option is enabled. RealEsrgan image enhancement will be skipped."._Print();
+                "***"._Print();
+                ""._Print();
+            }
 
             if (performOcr)
             {
