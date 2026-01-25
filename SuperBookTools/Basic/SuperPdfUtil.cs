@@ -1809,6 +1809,7 @@ public class SuperPerformPdfOptions
     public int MaxPagesForDebug = int.MaxValue;
     public bool SaveDebugPng = false;
     public bool SkipRealesrgan = false;
+    public int MaxCpuThreads = 0; // 0 = use Env.NumCpus
 }
 
 public class SuperPdfResult
@@ -1946,7 +1947,8 @@ public static class SuperPdfUtil
         }
 
         // 色調整・傾き修正
-        var result = await PerformPagesYohakuAsync(pdf_ai_result_dir, pdf_adjusted_dir, pdf_tmp_dir, options.MarginPercent, Env.NumCpus, maxPagesForDebug: options.MaxPagesForDebug, saveDebugPng: options.SaveDebugPng);
+        int cpuThreads = options.MaxCpuThreads > 0 ? options.MaxCpuThreads : Env.NumCpus;
+        var result = await PerformPagesYohakuAsync(pdf_ai_result_dir, pdf_adjusted_dir, pdf_tmp_dir, options.MarginPercent, cpuThreads, maxPagesForDebug: options.MaxPagesForDebug, saveDebugPng: options.SaveDebugPng);
 
         // PDF を生成
         await Lfs.DeleteFileIfExistsAsync(dstPdfPath, raiseException: true, cancel: cancel);
