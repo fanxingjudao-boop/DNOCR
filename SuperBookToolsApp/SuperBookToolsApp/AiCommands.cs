@@ -59,7 +59,11 @@ namespace SuperBookTools.App
         [ConsoleCommand(
             "ConvertPdf command",
             "ConvertPdf [srcDir] [/dst:dstDir] [/ocr:yes|no] [/skip:yes|no]",
-            "ConvertPdf command")]
+            "Convert PDF files with image enhancement and OCR.\n" +
+            "Options:\n" +
+            "  /dst:path    - Destination directory (required)\n" +
+            "  /ocr:yes|no  - Perform Japanese AI-OCR using YomiToku (default: no)\n" +
+            "  /skip:yes|no - Skip RealEsrgan image enhancement (default: no)")]
         public static async Task<int> ConvertPdf(ConsoleService c, string cmdName, string str)
         {
             ConsoleParam[] args =
